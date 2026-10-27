@@ -69,7 +69,11 @@ export default function AdminUserManagementPage() {
       if (searchQuery.trim()) params.search = searchQuery.trim();
 
       const data = await adminService.getUsers(params);
-      setUsers(data);
+      // Filter out users with role 'ADMIN' so only regular users appear
+      const regularUsers = Array.isArray(data)
+        ? data.filter((user) => user.role !== "ADMIN")
+        : [];
+      setUsers(regularUsers);
     } catch (err) {
       setError(
         err.response?.data?.error?.message ||
@@ -288,7 +292,9 @@ export default function AdminUserManagementPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {users.map((user) => {
+                  {users
+                    .filter((user) => user.role !== "ADMIN")
+                    .map((user) => {
                     const isTutor = user.role === "TUTOR";
                     const isPhone = user.phoneOrEmail?.startsWith("+") || /^\d+$/.test(user.phoneOrEmail?.replace(/\D/g, ""));
                     const subjects = user.tutorProfile?.subjects || [];
